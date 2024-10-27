@@ -6,12 +6,10 @@ const BlogDetail = () => {
   let blogId  = useParams(); // Get blog _id from URL
   blogId = blogId.id
   const [blog, setBlog] = useState(null);
-  // console.log("id:: ", blogId.id);
   useEffect(() => {
     // Fetch the blog data using the blogId
     const fetchBlog = async () => {
       try {
-        console.log('here')
         const response = await axios.get(
           `http://localhost:5000/api/blogs/${blogId}`
         );
@@ -25,7 +23,6 @@ const BlogDetail = () => {
   }, [blogId]);
 
 
-// console.log("blog:: ", blog);
   if (!blog) return <p>Loading blog details...</p>;
 
   return (

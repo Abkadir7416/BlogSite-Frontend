@@ -14,7 +14,6 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form Data Submitted:', formData);
     // You can integrate an API here to send the form data to your server or email service
     setFormData({ name: '', email: '', message: '' });  // Reset form after submission
   };
@@ -61,7 +60,7 @@ const Contact = () => {
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          className="bg-slate-900 text-white px-4 py-2 rounded-md"
         >
           Submit
         </button>

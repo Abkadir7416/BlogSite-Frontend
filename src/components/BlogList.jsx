@@ -29,9 +29,6 @@ const BlogList = () => {
   
 
   const editBlog = (blogId) => {
-    // <Route path="/update-blog" element={<UpdateBlog />} />
-    console.log('update blog is called with id: ', blogId)
-    // navigate(`/update-blog/${blogId}`)
     navigate(`/update-blog/${blogId}`)
   }
 

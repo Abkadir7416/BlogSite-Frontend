@@ -29,9 +29,6 @@ const UpdateBlog = () => {
   }, [blogId]);
 
   const handleChange = (e) => {
-    console.log("formData: ", formData)
-    console.log("e.target.name: ", e.target.name)
-    console.log("e.target.value: ", e.target.value)
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
