@@ -36,7 +36,14 @@ const BlogList = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs");
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/blogs", 
+          {
+            headers: {
+              Authorization: `${token}`, // Set the Authorization header with Bearer token
+            },
+          }
+        );
         setBlogs(response.data);
       } catch (error) {
         console.error("Error fetching the blog data:", error);

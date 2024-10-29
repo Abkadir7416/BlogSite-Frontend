@@ -42,18 +42,39 @@ const Home = () => {
       const response = await axios.get(
         `http://localhost:5000/api/blogs/search?query=${query}`
       );
-      ("response: ", response)
+      // "response: ", response;
       setBlogs(response.data);
     } catch (error) {
       console.error("Error fetching blogs:", error);
     }
   };
 
+  // useEffect(() => {
+  //   const fetchBlogs = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "http://localhost:5000/api/blogs/home?limit=3"
+  //       );
+  //       setBlogs(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching blogs:", error);
+  //     }
+  //   };
+  //   fetchBlogs();
+  // }, []);
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
+        const token = localStorage.getItem("token"); // Retrieve token from local storage or any secure storage
+        console.log("token: ", token)
         const response = await axios.get(
-          "http://localhost:5000/api/blogs/home?limit=3"
+          "http://localhost:5000/api/blogs/home?limit=3",
+          {
+            headers: {
+              Authorization: `${token}`, // Set the Authorization header with Bearer token
+            },
+          }
         );
         setBlogs(response.data);
       } catch (error) {
@@ -62,6 +83,7 @@ const Home = () => {
     };
     fetchBlogs();
   }, []);
+  
 
   return (
     <div className="w-full container mx-auto p-4">
@@ -72,22 +94,14 @@ const Home = () => {
         >
           Add New Blog
         </button>
-        {/* <input
+
+        <input
           type="text"
           placeholder="Search blogs..."
           value={searchTerm}
           onChange={handleSearch}
-          className="border px-4 py-2 rounded-md w-1/3"
-        /> */}
-
-<input
-  type="text"
-  placeholder="Search blogs..."
-  value={searchTerm}
-  onChange={handleSearch}
-  className="border border-gray-600 px-4 py-3 rounded-lg w-1/3 text-gray-800 placeholder:text-gray-700 placeholder:font-semibold placeholder:text-lg"
-/>
-
+          className="border border-gray-600 px-4 py-3 rounded-lg w-1/3 text-gray-800 placeholder:text-gray-700 placeholder:font-semibold placeholder:text-lg"
+        />
       </div>
 
       <h1 className="text-3xl font-bold mb-6">Latest Blogs</h1>
