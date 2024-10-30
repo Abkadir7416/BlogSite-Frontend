@@ -15,9 +15,15 @@ const Home = () => {
 
   const deleteBlog = async (blogId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`);
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, 
+        {
+          headers: {
+            Authorization: `${token}`, // Set the Authorization header with Bearer token
+          },
+        });
       setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
-      navigate(`/`);
+      navigate(`/home`);
     } catch (error) {
       console.error("Error deleting the blog:", error);
     }
@@ -39,8 +45,14 @@ const Home = () => {
     const query = e.target.value;
     setSearchTerm(e.target.value);
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:5000/api/blogs/search?query=${query}`
+        `http://localhost:5000/api/blogs/search?query=${query}`,
+        {
+          headers: {
+            Authorization: `${token}`, // Set the Authorization header with Bearer token
+          },
+        }
       );
       // "response: ", response;
       setBlogs(response.data);
@@ -49,25 +61,10 @@ const Home = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchBlogs = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "http://localhost:5000/api/blogs/home?limit=3"
-  //       );
-  //       setBlogs(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching blogs:", error);
-  //     }
-  //   };
-  //   fetchBlogs();
-  // }, []);
-
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const token = localStorage.getItem("token"); // Retrieve token from local storage or any secure storage
-        console.log("token: ", token)
         const response = await axios.get(
           "http://localhost:5000/api/blogs/home?limit=3",
           {

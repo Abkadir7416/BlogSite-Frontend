@@ -1,27 +1,42 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-        try {
-            await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
-            alert("Registration successful! Please login.");
-            navigate('/login')
-        } catch (error) {
-            console.error('Registration error', error);
-            alert("Error registering user.");
-        }
+    try {
+      const data = await axios.post("http://localhost:5000/api/auth/register", {
+        name,
+        email,
+        password,
+      });
+      if (data.data.msg === "User already exists") {
+        toast.success("User already exists, please login.");
+        alert('already  exists');
+
+      } else {
+        toast.success("Registration successfully! Please login.");
+      }
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error", error);
+      alert("Error registering user.");
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg w-80">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-lg shadow-lg w-80"
+      >
         <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
         <input
           type="text"
@@ -44,9 +59,18 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 mb-6 border rounded"
         />
-        <button type="submit" className="w-full bg-slate-900 text-white p-2 rounded ">
+        <button
+          type="submit"
+          className="w-full bg-slate-900 text-white p-2 rounded "
+        >
           Register
         </button>
+        <p className="mt-3">
+          Already have account?{" "}
+          <Link className="border-b border-b-blue-500 " to="/login">
+            <b>Login here</b>
+          </Link>
+        </p>
       </form>
     </div>
   );

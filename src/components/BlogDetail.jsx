@@ -10,8 +10,14 @@ const BlogDetail = () => {
     // Fetch the blog data using the blogId
     const fetchBlog = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:5000/api/blogs/${blogId}`
+          `http://localhost:5000/api/blogs/${blogId}`,
+          {
+            headers: {
+              Authorization: `${token}`, // Set the Authorization header with Bearer token
+            },
+          }
         );
         setBlog(response.data);
       } catch (error) {

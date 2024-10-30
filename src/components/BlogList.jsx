@@ -19,7 +19,13 @@ const BlogList = () => {
   
   const deleteBlog = async (blogId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`);
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, 
+        {
+          headers: {
+            Authorization: `${token}`, // Set the Authorization header with Bearer token
+          },
+        });
       setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId)); // Update state to remove deleted blog
       navigate(`/blogs`);
     } catch (error) {
@@ -68,22 +74,6 @@ const BlogList = () => {
             key={blog._id}
             className="p-4 border rounded-lg mb-10 shadow shadow-black"
           >
-            {/* <span className="">
-              <img
-                style={{
-                  display: "inline",
-                  marginRight: "15px",
-                  cursor: "pointer",
-                }}
-                src={deleteImage}
-                alt=""
-              />
-              <img
-                style={{ display: "inline", cursor: "pointer", width: "22px" }}
-                src={editImage}
-                alt=""
-              />
-            </span> */}
             
             <div className="flex justify-end mb-2">
         <img

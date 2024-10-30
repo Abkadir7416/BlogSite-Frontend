@@ -15,9 +15,15 @@ const UpdateBlog = () => {
   useEffect(() => {
     // Fetch the blog data using the blogId
     const fetchBlog = async () => {
+      const token = localStorage.getItem("token");
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/blogs/${blogId}`
+          `http://localhost:5000/api/blogs/${blogId}`,
+          {
+            headers: {
+              Authorization: `${token}`, // Set the Authorization header with Bearer token
+            },
+          }
         );
         setFormData(response.data); // Set formData with fetched blog data
       } catch (error) {
@@ -39,7 +45,13 @@ const UpdateBlog = () => {
     e.preventDefault();
     try {
       // Send the blog data to the backend API to store in MongoDB
-      await axios.put(`http://localhost:5000/api/blogs/${blogId}`, formData);
+      const token = localStorage.getItem("token");
+      await axios.put(`http://localhost:5000/api/blogs/${blogId}`, formData,
+        {
+          headers: {
+            Authorization: `${token}`, // Set the Authorization header with Bearer token
+          },
+        });
       // Redirect to blog list page after submission
       navigate('/blogs');
     } catch (error) {

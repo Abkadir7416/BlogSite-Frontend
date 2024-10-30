@@ -22,7 +22,13 @@ const BlogForm = () => {
     e.preventDefault();
     try {
       // Send the blog data to the backend API to store in MongoDB
-      await axios.post('http://localhost:5000/api/blogs', formData);
+      const token = localStorage.getItem("token");
+      await axios.post('http://localhost:5000/api/blogs', formData,
+        {
+          headers: {
+            Authorization: `${token}`, // Set the Authorization header with Bearer token
+          },
+        });
       // Redirect to blog list page after submission
       navigate('/blogs');
     } catch (error) {

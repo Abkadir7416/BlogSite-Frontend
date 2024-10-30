@@ -54,26 +54,91 @@
 // export default Navbar;
 
 
-import React from "react";
+// import React from "react";
+// import { Link, useNavigate } from "react-router-dom";
+
+// const Navbar = () => {
+//   const navigate = useNavigate();
+//   const token = localStorage.getItem("token");
+
+//   const handleLogout = () => {
+//     localStorage.removeItem("token");
+//     navigate("/");
+//   };
+
+//   return (
+//     <nav className="bg-slate-900 p-4 shadow-lg">
+//       <div className="container mx-auto flex justify-between items-center">
+//         <Link to="/" className="text-white text-2xl font-bold">
+//           BlogSite
+//         </Link>
+//         <div>
+//           {token ? (
+//             <div className="flex space-x-4">
+//               <Link to="/home" className="text-white hover:text-gray-200">
+//                 Home
+//               </Link>
+//               <Link to="/blogs" className="text-white hover:text-gray-200">
+//                 Blogs
+//               </Link>
+//               <Link to="/about" className="text-white hover:text-gray-200">
+//                 About
+//               </Link>
+//               <Link to="/contact" className="text-white hover:text-gray-200">
+//                 Contact
+//               </Link>
+//               <button
+//                 onClick={handleLogout}
+//                 className="text-white hover:text-gray-200"
+//               >
+//                 Logout
+//               </button>
+//             </div>
+//           ) : (
+//             <div className="flex space-x-4">
+//               <Link to="/login" className="text-white hover:text-gray-200">
+//                 Login
+//               </Link>
+//               <Link to="/register" className="text-white hover:text-gray-200">
+//                 Register
+//               </Link>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// };
+
+// export default Navbar;
+
+
+// ===============================================
+
+import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-toastify";
+
 
 const Navbar = () => {
+  const { isLoggedIn, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+    logout();
+    navigate("/"); // Redirect to landing page on logout
+    toast.success('Logged out!!')
   };
 
   return (
-    <nav className="bg-slate-900 p-4 shadow-lg">
+        <nav className="bg-slate-900 p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-white text-2xl font-bold">
           BlogSite
         </Link>
         <div>
-          {token ? (
+          {isLoggedIn ? (
             <div className="flex space-x-4">
               <Link to="/home" className="text-white hover:text-gray-200">
                 Home
@@ -81,10 +146,13 @@ const Navbar = () => {
               <Link to="/blogs" className="text-white hover:text-gray-200">
                 Blogs
               </Link>
-              <button
-                onClick={handleLogout}
-                className="text-white hover:text-gray-200"
-              >
+              <Link to="/about" className="text-white hover:text-gray-200">
+                About
+              </Link>
+              <Link to="/contact" className="text-white hover:text-gray-200">
+                Contact
+              </Link>
+              <button onClick={handleLogout} className="text-white hover:text-gray-200">
                 Logout
               </button>
             </div>
