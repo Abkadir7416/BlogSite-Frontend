@@ -17,17 +17,14 @@ const Register = () => {
         password,
       });
       if (data.data.msg === "User already exists") {
-        toast.success("User already exists, please login.");
-        alert('already  exists');
-
+        toast.warning("User already exists, please login.");
       } else {
         toast.success("Registration successfully! Please login.");
       }
 
       navigate("/login");
     } catch (error) {
-      console.error("Registration error", error);
-      alert("Error registering user.");
+      toast.error("Error registering user.");
     }
   };
 
