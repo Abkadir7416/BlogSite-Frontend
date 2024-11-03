@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { toast } from "react-toastify";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -6,21 +8,28 @@ const Contact = () => {
     email: '',
     message: ''
   });
+  // const [responseMessage, setResponseMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // You can integrate an API here to send the form data to your server or email service
-    setFormData({ name: '', email: '', message: '' });  // Reset form after submission
+    try {
+      const response = await axios.post('http://localhost:5000/api/blogs/send-email', formData);
+      toast.success(response.data.message);
+    } catch (error) {
+      toast.error('failed to send email');
+    }
+    setFormData({ name: '', email: '', message: '' }); // Reset form after submission
   };
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-4xl font-bold mb-6">Contact Us</h1>
+      {/* {responseMessage && <p>{responseMessage}</p>} */}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <label className="block text-lg font-medium text-gray-700">Name</label>
