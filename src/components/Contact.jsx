@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    subject: '',
+    name: '',
     email: '',
     message: ''
   });
@@ -23,7 +23,7 @@ const Contact = () => {
     } catch (error) {
       toast.error('failed to send email');
     }
-    setFormData({ subject: '', email: '', message: '' }); // Reset form after submission
+    setFormData({ name: '', email: '', message: '' }); // Reset form after submission
   };
 
   return (
@@ -32,11 +32,11 @@ const Contact = () => {
       {/* {responseMessage && <p>{responseMessage}</p>} */}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-lg font-medium text-gray-700">Subject</label>
+          <label className="block text-lg font-medium text-gray-700">Name</label>
           <input
             type="text"
-            name="subject"
-            value={formData.subject}
+            name="name"
+            value={formData.name}
             onChange={handleInputChange}
             className="w-full p-2 mt-1 border rounded-md"
             required
