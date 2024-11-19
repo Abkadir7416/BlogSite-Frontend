@@ -7,7 +7,8 @@ import del from "../icons/del.png";
 const Home = () => {
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate("");
+  const [loading, setLoading] = useState(true); // Add loading state
+  const navigate = useNavigate();
 
   const goToBlogForm = () => {
     navigate("/add-blog");
@@ -16,14 +17,12 @@ const Home = () => {
   const deleteBlog = async (blogId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, 
-        {
-          headers: {
-            Authorization: `${token}`, // Set the Authorization header with Bearer token
-          },
-        });
+      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, {
+        headers: {
+          Authorization: `${token}`, // Set the Authorization header with Bearer token
+        },
+      });
       setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
-      navigate(`/home`);
     } catch (error) {
       console.error("Error deleting the blog:", error);
     }
@@ -54,7 +53,6 @@ const Home = () => {
           },
         }
       );
-      // "response: ", response;
       setBlogs(response.data);
     } catch (error) {
       console.error("Error fetching blogs:", error);
@@ -76,14 +74,16 @@ const Home = () => {
         setBlogs(response.data);
       } catch (error) {
         console.error("Error fetching blogs:", error);
+      } finally {
+        setLoading(false); // Stop loading after fetching blogs
       }
     };
     fetchBlogs();
   }, []);
-  
 
   return (
     <div className="w-full container mx-auto p-4">
+      {/* This part remains visible while content is loading */}
       <div className="flex justify-between items-center mb-4">
         <button
           className="border-2 font-bold border-black text-black px-4 py-2 rounded-md text-lg"
@@ -103,55 +103,66 @@ const Home = () => {
 
       <h1 className="text-3xl font-bold mb-6">Latest Blogs</h1>
 
-      <div className=" px-4 py-2 rounded-md mb-4 text-lg ">
-        {blogs.map((blog) => (
-          <div
-            key={blog._id}
-            className="w-[70%] grid grid-cols-10 border rounded-lg p-4 shadow-md m-10"
-          >
+      {/* If loading, show spinner; otherwise, show blogs */}
+      { loading ? (
+        <div className="flex flex-col justify-center items-center h-[calc(100vh-200px)]">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-black border-solid"></div>
+          <p className="mt-4 text-xl text-gray-500">Loading blogs...</p>
+        </div>
+      ) : (
+        <div className="px-4 py-2 rounded-md mb-4 text-lg">
+          {blogs.map((blog) => (
             <div
-              style={{ cursor: "pointer" }}
-              className="content col-span-9"
-              onClick={() => handleBlogClick(blog._id)}
+              key={blog._id}
+              className="w-[70%] grid grid-cols-10 border rounded-lg p-4 shadow-md m-10"
             >
-              <p className="text-gray-600 underline">by {blog.writer}</p>
-              <h2 className="text-2xl font-semibold mb-2">{blog.title}</h2>
-              <p className="text-gray-800 mt-4">
-                {blog.description.slice(0, 100)}...
-              </p>
-            </div>
-            <div className="media col-span-1">
-              <span>
+              <div
+                style={{ cursor: "pointer" }}
+                className="content col-span-9"
+                onClick={() => handleBlogClick(blog._id)}
+              >
+                <p className="text-gray-600 underline">by {blog.writer}</p>
+                <h2 className="text-2xl font-semibold mb-2">{blog.title}</h2>
+                <p className="text-gray-800 mt-4">
+                  {blog.description.slice(0, 100)}...
+                </p>
+              </div>
+              <div className="media col-span-1">
+                <span>
+                  <img
+                    style={{
+                      display: "inline",
+                      marginRight: "10px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => deleteBlog(blog._id)}
+                    src={del}
+                    alt="Delete"
+                  />
+                  <img
+                    style={{ display: "inline", cursor: "pointer" }}
+                    onClick={() => editBlog(blog._id)}
+                    src={edit}
+                    alt="Edit"
+                  />
+                </span>
                 <img
-                  style={{
-                    display: "inline",
-                    marginRight: "10px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => deleteBlog(blog._id)}
-                  src={del}
-                  alt="Delete"
+                  src={blog.imgSrc}
+                  alt=""
+                  className="mt-4 h-35 object-cover rounded-md"
                 />
-                <img
-                  style={{ display: "inline", cursor: "pointer" }}
-                  onClick={() => editBlog(blog._id)}
-                  src={edit}
-                  alt="Edit"
-                />
-              </span>
-              <img
-                src={blog.imgSrc}
-                alt=""
-                className="mt-4 h-35 object-cover rounded-md"
-              />
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <button onClick={handleReadMore} className="pl-12 underline font-bold">
-        Read More Blogs...
-      </button>
+      {/* Hide "Read More" button while loading */}
+      {!loading && blogs.length > 0 && (
+        <button onClick={handleReadMore} className="pl-12 underline font-bold">
+          Read More Blogs...
+        </button>
+      )}
     </div>
   );
 };
