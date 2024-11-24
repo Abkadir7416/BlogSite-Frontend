@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import edit from "../icons/edit.png";
@@ -7,87 +7,108 @@ import del from "../icons/del.png";
 const Home = () => {
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const [writers, setWriters] = useState([]);
   const navigate = useNavigate();
 
-  const goToBlogForm = () => {
+  // Navigate to Add Blog Form
+  const goToBlogForm = useCallback(() => {
     navigate("/add-blog");
-  };
+  }, [navigate]);
 
-  const deleteBlog = async (blogId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, {
-        headers: {
-          Authorization: `${token}`, // Set the Authorization header with Bearer token
-        },
-      });
-      setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
-    } catch (error) {
-      console.error("Error deleting the blog:", error);
-    }
-  };
+  // Delete Blog Handler
+  const deleteBlog = useCallback(
+    async (blogId) => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`http://localhost:5000/api/blogs/${blogId}`, {
+          headers: { Authorization: `${token}` },
+        });
+        setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
+      } catch (error) {
+        console.error("Error deleting the blog:", error);
+        alert("Failed to delete blog. Please try again.");
+      }
+    },
+    []
+  );
 
-  const editBlog = (blogId) => {
-    navigate(`/update-blog/${blogId}`);
-  };
+  // Edit Blog Handler
+  const editBlog = useCallback(
+    (blogId) => {
+      navigate(`/update-blog/${blogId}`);
+    },
+    [navigate]
+  );
 
-  const handleBlogClick = (id) => {
-    navigate(`/blog/${id}`);
-  };
+  // Navigate to Blog Details
+  const handleBlogClick = useCallback(
+    (id) => {
+      navigate(`/blog/${id}`);
+    },
+    [navigate]
+  );
 
-  const handleReadMore = () => {
-    navigate("/blogs");
-  };
-
-  const handleSearch = async (e) => {
-    const query = e.target.value;
-    setSearchTerm(e.target.value);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `http://localhost:5000/api/blogs/search?query=${query}`,
-        {
-          headers: {
-            Authorization: `${token}`, // Set the Authorization header with Bearer token
-          },
-        }
-      );
-      setBlogs(response.data);
-    } catch (error) {
-      console.error("Error fetching blogs:", error);
-    }
-  };
-
+  // Fetch Blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const token = localStorage.getItem("token"); // Retrieve token from local storage or any secure storage
+        const token = localStorage.getItem("token");
         const response = await axios.get(
           "http://localhost:5000/api/blogs/home?limit=3",
-          {
-            headers: {
-              Authorization: `${token}`, // Set the Authorization header with Bearer token
-            },
-          }
+          { headers: { Authorization: `${token}` } }
         );
         setBlogs(response.data);
       } catch (error) {
         console.error("Error fetching blogs:", error);
+        alert("Failed to fetch blogs.");
       } finally {
-        setLoading(false); // Stop loading after fetching blogs
+        setLoading(false);
       }
     };
+
+    const fetchWriters = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/writer?limit=4"
+        );
+        setWriters(response.data.data);
+      } catch (error) {
+        console.error("Error fetching writers:", error);
+        alert("Failed to fetch writers.");
+      }
+    };
+
     fetchBlogs();
+    fetchWriters();
   }, []);
 
+  // Handle Search
+  const handleSearch = useCallback(
+    async (e) => {
+      const query = e.target.value;
+      setSearchTerm(query);
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:5000/api/blogs/search?query=${query}`,
+          { headers: { Authorization: `${token}` } }
+        );
+        setBlogs(response.data);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    },
+    []
+  );
+
   return (
-    <div className="w-full container mx-auto p-4">
-      {/* This part remains visible while content is loading */}
+    <div className="container mx-auto p-4">
+      {/* Header Section */}
       <div className="flex justify-between items-center mb-4">
         <button
-          className="border-2 font-bold border-black text-black px-4 py-2 rounded-md text-lg"
           onClick={goToBlogForm}
+          className="border-2 border-black text-black px-4 py-2 rounded-md font-bold"
         >
           Add New Blog
         </button>
@@ -97,71 +118,115 @@ const Home = () => {
           placeholder="Search blogs..."
           value={searchTerm}
           onChange={handleSearch}
-          className="border border-gray-600 px-4 py-3 rounded-lg w-1/3 text-gray-800 placeholder:text-gray-700 placeholder:font-semibold placeholder:text-lg"
+          className="border border-gray-600 px-4 py-2 rounded-lg w-1/3 placeholder-gray-700"
         />
       </div>
 
       <h1 className="text-3xl font-bold mb-6">Latest Blogs</h1>
 
-      {/* If loading, show spinner; otherwise, show blogs */}
-      { loading ? (
-        <div className="flex flex-col justify-center items-center h-[calc(100vh-200px)]">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-black border-solid"></div>
-          <p className="mt-4 text-xl text-gray-500">Loading blogs...</p>
+      {/* Blogs Section */}
+      {loading ? (
+        <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-black"></div>
+          <p className="ml-4 text-gray-500">Loading blogs...</p>
         </div>
       ) : (
-        <div className="px-4 py-2 rounded-md mb-4 text-lg">
-          {blogs.map((blog) => (
-            <div
-              key={blog._id}
-              className="w-[70%] grid grid-cols-10 border rounded-lg p-4 shadow-md m-10"
-            >
-              <div
-                style={{ cursor: "pointer" }}
-                className="content col-span-9"
-                onClick={() => handleBlogClick(blog._id)}
-              >
-                <p className="text-gray-600 underline">by {blog.writer}</p>
-                <h2 className="text-2xl font-semibold mb-2">{blog.title}</h2>
-                <p className="text-gray-800 mt-4">
-                  {blog.description.slice(0, 100)}...
-                </p>
-              </div>
-              <div className="media col-span-1">
-                <span>
-                  <img
-                    style={{
-                      display: "inline",
-                      marginRight: "10px",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => deleteBlog(blog._id)}
-                    src={del}
-                    alt="Delete"
-                  />
-                  <img
-                    style={{ display: "inline", cursor: "pointer" }}
-                    onClick={() => editBlog(blog._id)}
-                    src={edit}
-                    alt="Edit"
-                  />
-                </span>
-                <img
-                  src={blog.imgSrc}
-                  alt=""
-                  className="mt-4 h-35 object-cover rounded-md"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        <div className="grid grid-cols-12 gap-4">
+          {/* Blog Posts */}
 
-      {/* Hide "Read More" button while loading */}
-      {!loading && blogs.length > 0 && (
-        <button onClick={handleReadMore} className="pl-12 underline font-bold">
-          Read More Blogs...
-        </button>
+          <div className="col-span-9">
+            {blogs.map((blog) => (
+              <div
+                key={blog._id}
+                className="w-full grid grid-cols-10 border rounded-lg p-4 shadow-md mb-6"
+              >
+                <div
+                  style={{ cursor: "pointer" }}
+                  className="content col-span-9"
+                  onClick={() => handleBlogClick(blog._id)}
+                >
+                  <p className="text-gray-600 underline">by {blog.writer}</p>
+                  <h2 className="text-2xl font-semibold mb-2">{blog.title}</h2>
+                  <p className="text-gray-800 mt-4">
+                    {blog.description.slice(0, 100)}...
+                  </p>
+                </div>
+                <div className="media col-span-1">
+                  <span>
+                    <img
+                      style={{
+                        display: "inline",
+                        marginRight: "10px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => deleteBlog(blog._id)}
+                      src={del}
+                      alt="Delete"
+                    />
+                    <img
+                      style={{ display: "inline", cursor: "pointer" }}
+                      onClick={() => editBlog(blog._id)}
+                      src={edit}
+                      alt="Edit"
+                    />
+                  </span>
+                  <img
+                    src={blog.imgSrc}
+                    alt=""
+                    className="mt-4 h-35 object-cover rounded-md"
+                  />
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={() => navigate("/blogs")}
+              className="underline font-bold"
+            >
+              Read More Blogs...
+            </button>
+          </div>
+
+          {/* Writers Section */}
+          <div className="col-span-3 bg-gray-100 p-4 rounded-lg shadow-md">
+            <h3 className="text-xl font-bold mb-4">More Writers</h3>
+            {writers.map((writer) => (
+              <div
+                key={writer.id}
+                className="flex items-center mb-4 p-3 border rounded-lg bg-white"
+              >
+                <img
+                  src={writer.imgSrc || "https://via.placeholder.com/80"}
+                  alt={writer.name}
+                  className="w-16 h-16 rounded-full object-cover mr-4"
+                />
+                <div>
+                  <h4 className="text-lg font-semibold">{writer.name}</h4>
+                  <p className="text-sm text-gray-500">
+                    {writer.degree.join(", ")}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {writer.postCount} Posts
+                  </p>
+                </div>
+              </div>
+            ))}
+            <button className="flex items-center space-x-2 font-bold border-2 border-slate-800 py-1 px-2 rounded-full">
+              <span>See more</span>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5.29289 9.29289C5.68342 8.90237 6.31658 8.90237 6.70711 9.29289L12 14.5858L17.2929 9.29289C17.6834 8.90237 18.3166 8.90237 18.7071 9.29289C19.0976 9.68342 19.0976 10.3166 18.7071 10.7071L12.7071 16.7071C12.5196 16.8946 12.2652 17 12 17C11.7348 17 11.4804 16.8946 11.2929 16.7071L5.29289 10.7071C4.90237 10.3166 4.90237 9.68342 5.29289 9.29289Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
