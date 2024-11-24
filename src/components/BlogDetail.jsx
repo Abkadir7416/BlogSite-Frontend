@@ -3,22 +3,23 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 
 const BlogDetail = () => {
-  let blogId = useParams(); // Get blog _id from URL
-  blogId = blogId.id;
+  const blogId = useParams().id; // Get blog _id from URL
   const [blog, setBlog] = useState(null);
   const [liked, setLiked] = useState(false);
+  const [newComment, setNewComment] = useState(""); // State for new comment
+  const [comments, setComments] = useState([]); // State for comments
+  const [loadingComments, setLoadingComments] = useState(false); // State for comment submission
+  const [showAllComments, setShowAllComments] = useState(false); // State for toggling comments view
 
   useEffect(() => {
-    // Fetch the blog data using the blogId
+    // Fetch the blog data
     const fetchBlog = async () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
           `http://localhost:5000/api/blogs/${blogId}`,
           {
-            headers: {
-              Authorization: `${token}`, // Set the Authorization header with Bearer token
-            },
+            headers: { Authorization: `${token}` },
           }
         );
         setBlog(response.data);
@@ -28,6 +29,25 @@ const BlogDetail = () => {
     };
 
     fetchBlog();
+  }, [blogId]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:5000/api/blogs/comments/${blogId}`,
+          {
+            headers: { Authorization: `${token}` },
+          }
+        );
+        setComments(response.data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+
+    fetchComments();
   }, [blogId]);
 
   const handleLike = async () => {
@@ -40,25 +60,43 @@ const BlogDetail = () => {
       const token = localStorage.getItem("token");
       const response = await axios.put(
         `http://localhost:5000/api/blogs/like/${blog._id}`,
-        {}, // No body required
+        {},
         {
-          headers: {
-            Authorization: `${token}`, // Pass JWT for authentication
-          },
+          headers: { Authorization: `${token}` },
         }
       );
-
-      // Update likes in the blog state
       setBlog((prevBlog) => ({
         ...prevBlog,
-        likes: response.data.likes, // Assuming the API returns the updated like count
+        likes: response.data.likes,
       }));
-      setLiked(true); // Mark blog as liked
+      setLiked(true);
     } catch (error) {
       console.error("Error liking blog:", error);
-      if (error.response?.data?.msg) {
-        alert(error.response.data.msg); // Show error message from backend
-      }
+      alert(error.response?.data?.msg || "An error occurred while liking.");
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!newComment.trim()) {
+      alert("Comment cannot be empty!");
+      return;
+    }
+    try {
+      setLoadingComments(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `http://localhost:5000/api/blogs/comments/${blogId}`,
+        { commentText: newComment },
+        {
+          headers: { Authorization: `${token}` },
+        }
+      );
+      setComments((prevComments) => [...prevComments, response.data]); // Update comments state directly
+      setNewComment("");
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    } finally {
+      setLoadingComments(false);
     }
   };
 
@@ -70,45 +108,43 @@ const BlogDetail = () => {
       </div>
     );
   }
-  
 
   return (
     <div className="container mx-auto p-4">
-      {/* Blog Heading (outside the box) */}
       <h1 className="text-4xl font-bold text-center mb-6">{blog.title}</h1>
-
-      {/* Blog Content Box */}
       <div className="border rounded-lg shadow-lg p-6 bg-white">
-        {/* Writer's Name */}
         <p className="text-lg font-semibold text-gray-600 mb-4">
           Written by: {blog.writer}
         </p>
-
-        {/* Blog Image */}
-        <img
-          src={blog.imgSrc}
-          alt={blog.title}
-          className="w-[80%]  h-80 object-cover mb-4 rounded-lg"
-        />
-
-        {/* Blog Content */}
-        <div className="text-lg text-gray-800 leading-relaxed mb-6">
-          {blog.description}
-        </div>
-
-        {/* Blog Actions: Like, Comment, Share, Subscribe */}
-        <div className="flex items-center space-x-4">
+        {blog.description && (
+          <>
+            <p>
+              {blog.description.slice(
+                0,
+                Math.floor(blog.description.length / 4)
+              )}
+            </p>
+            {blog.imgSrc && (
+              <img
+                src={blog.imgSrc}
+                alt={blog.title}
+                className="w-[80%] h-80 object-cover mb-4 rounded-lg"
+              />
+            )}
+            <p>
+              {blog.description.slice(Math.floor(blog.description.length / 4))}
+            </p>
+          </>
+        )}
+        <div className="flex items-center space-x-4 mb-6">
           <button
             onClick={handleLike}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
             Like 👍 {blog.likes}
           </button>
-          {/* <button className="bg-red-500 text-white px-4 py-2 rounded-md">
-            Dislike 👎
-          </button> */}
           <button className="bg-yellow-500 text-white px-4 py-2 rounded-md">
-            Comment 💬 {blog.commentCount}
+            Comment 💬 {comments.length || 0}
           </button>
           <button className="bg-green-500 text-white px-4 py-2 rounded-md">
             Share 🔗
@@ -116,6 +152,56 @@ const BlogDetail = () => {
           <button className="bg-purple-500 text-white px-4 py-2 rounded-md">
             Subscribe 📩
           </button>
+        </div>
+        <div className="mt-6">
+          <h2 className="text-2xl font-bold mb-4">Comments</h2>
+          {comments.length > 0 ? (
+            <ul className="space-y-4">
+              {showAllComments
+                ? comments.map((comment, index) => (
+                    <li
+                      key={index}
+                      className="p-4 border rounded-lg shadow-sm bg-gray-50"
+                    >
+                      <p className="text-gray-800">{comment.commentText}</p>
+                    </li>
+                  ))
+                : comments.slice(0, 1).map((comment, index) => (
+                    <li
+                      key={index}
+                      className="p-4 border rounded-lg shadow-sm bg-gray-50"
+                    >
+                      <p className="text-gray-800">{comment.commentText}</p>
+                    </li>
+                  ))}
+            </ul>
+          ) : (
+            <p className="text-gray-600">No comments yet.</p>
+          )}
+          {!showAllComments && comments.length > 1 && (
+            <button
+              onClick={() => setShowAllComments(true)}
+              className="mt-4 underline"
+            >
+              See more comments...
+            </button>
+          )}
+          <div className="mt-6">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              className="w-full border rounded-lg p-4 text-lg mb-4"
+              rows={3}
+            ></textarea>
+            <button
+              onClick={handleCommentSubmit}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md"
+              disabled={loadingComments}
+            >
+              {loadingComments ? "Posting..." : "Post Comment"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
