@@ -15,6 +15,7 @@ import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BlogForm from "./components/BlogForm";
+import WriterDetailPage from "./components/WriterDetails";
 
 export default function App() {
   return (
@@ -24,7 +25,6 @@ export default function App() {
           <Navbar />
           <div className="flex-grow">
             <Routes>
-              {/* Redirect routes based on isLoggedIn value */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -35,7 +35,7 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog/:id" element={<BlogDetail />} />
               <Route path="/update-blog/:id" element={<UpdateBlog />} />
-              {/* <Route path="*" element={<Navigate to="/" />} /> */}
+              <Route path="/writer/:id" element={<WriterDetailPage />} />
             </Routes>
           </div>
           <Footer />
