@@ -9,6 +9,8 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [writers, setWriters] = useState([]);
+  const [showAll, setShowAll] = useState(false);
+
   const navigate = useNavigate();
 
   // Navigate to Add Blog Form
@@ -48,6 +50,13 @@ const Home = () => {
     },
     [navigate]
   );
+  // Navigate to Writer Details
+  const handleWriterClick = useCallback(
+    (id) => {
+      navigate(`/writer/${id}`);
+    },
+    [navigate]
+  );
 
   // Fetch Blogs
   useEffect(() => {
@@ -80,8 +89,29 @@ const Home = () => {
     };
 
     fetchBlogs();
-    fetchWriters();
+    // fetchWriters();
   }, []);
+
+  const fetchWriters = async (limit) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/writer?limit=${limit}`);
+      setWriters(response.data.data);
+    } catch (error) {
+      console.error("Error fetching writers:", error);
+      alert("Failed to fetch writers.");
+    }
+  };
+
+  useEffect(() => {
+    console.log('effect inside')
+    const initialLimit = showAll ? 1000 : 4; // Show 4 initially, or all if 'showAll' is true
+    fetchWriters(initialLimit);
+  }, [showAll]); // Trigger when showAll changes
+
+
+  const showMoreWriter = (()=> {
+    setShowAll((prevShowAll) => !prevShowAll); // Toggle between true and false
+  })
 
   // Handle Search
   const handleSearch = useCallback(
@@ -192,7 +222,8 @@ const Home = () => {
             {writers.map((writer) => (
               <div
                 key={writer.id}
-                className="flex items-center mb-4 p-3 border rounded-lg bg-white"
+                className="flex items-center mb-4 p-3 border rounded-lg bg-white cursor-pointer"
+                onClick={() => handleWriterClick(writer._id)}
               >
                 <img
                   src={writer.imgSrc || "https://via.placeholder.com/80"}
@@ -210,8 +241,12 @@ const Home = () => {
                 </div>
               </div>
             ))}
-            <button className="flex items-center space-x-2 font-bold border-2 border-slate-800 py-1 px-2 rounded-full">
-              <span>See more</span>
+            <button className="flex items-center space-x-2 font-bold border-2 border-slate-800 py-1 px-2 rounded-full"
+            onClick={() => showMoreWriter()}
+            >
+              <span>
+              {showAll ? "Show less writers" : "Show all writers"}
+              </span>
               <svg
                 width="24"
                 height="24"

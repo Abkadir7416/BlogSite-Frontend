@@ -112,28 +112,41 @@ const BlogDetail = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-4xl font-bold text-center mb-6">{blog.title}</h1>
-      <div className="border rounded-lg shadow-lg p-6 bg-white">
-        <p className="text-lg font-semibold text-gray-600 mb-4">
-          Written by: {blog.writer}
-        </p>
+      <div className="p-6 bg-white">
+        <p className="text-lg font-bold mb-4">Written by: {blog.writer}</p>
         {blog.description && (
           <>
-            <p>
-              {blog.description.slice(
-                0,
-                Math.floor(blog.description.length / 4)
-              )}
-            </p>
-            {blog.imgSrc && (
-              <img
-                src={blog.imgSrc}
-                alt={blog.title}
-                className="w-[80%] h-80 object-cover mb-4 rounded-lg"
-              />
-            )}
-            <p>
-              {blog.description.slice(Math.floor(blog.description.length / 4))}
-            </p>
+            {/* Split the description into paragraphs */}
+            {blog.description.split("\n").map((paragraph, index, arr) => {
+              if (index < 2) {
+                // Render the first two paragraphs
+                return (
+                  <p key={index} className="mb-4 text-gray-800 text-lg">
+                    {paragraph}
+                  </p>
+                );
+              } else if (index === 2 && blog.imgSrc) {
+                // Add the image after the second paragraph
+                return (
+                  <div key="image" className="flex justify-center mb-4">
+                    <img
+                      src={blog.imgSrc}
+                      alt={blog.title}
+                      // className="w-[90%] h-auto object-cover rounded-lg"
+                      className="w-[60%] h-100 object-cover rounded-lg"
+                    />
+                  </div>
+                );
+              } else if (index >= 2) {
+                // Render the remaining paragraphs after the image
+                return (
+                  <p key={index} className="mb-4 text-gray-800 text-lg">
+                    {paragraph}
+                  </p>
+                );
+              }
+              return null;
+            })}
           </>
         )}
         <div className="flex items-center space-x-4 mb-6">
