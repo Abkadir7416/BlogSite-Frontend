@@ -76,20 +76,8 @@ const Home = () => {
       }
     };
 
-    const fetchWriters = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/writer?limit=4"
-        );
-        setWriters(response.data.data);
-      } catch (error) {
-        console.error("Error fetching writers:", error);
-        alert("Failed to fetch writers.");
-      }
-    };
 
     fetchBlogs();
-    // fetchWriters();
   }, []);
 
   const fetchWriters = async (limit) => {
@@ -103,7 +91,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    console.log('effect inside')
     const initialLimit = showAll ? 1000 : 4; // Show 4 initially, or all if 'showAll' is true
     fetchWriters(initialLimit);
   }, [showAll]); // Trigger when showAll changes
